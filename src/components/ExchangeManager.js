@@ -11,7 +11,6 @@ import Row from "react-bootstrap/Row";
 class ExchangeManager extends Component {
   state = {
     currencies: [],
-    rates: [],
     fromCurrency: localStorage.get("fromCurrency") || "EUR",
     toCurrency: localStorage.get("toCurrency") || "USD",
     amount: localStorage.get("amount") || "",
@@ -30,7 +29,6 @@ class ExchangeManager extends Component {
       fetch("https://api.exchangeratesapi.io/latest?base=USD")
         .then(res => res.json())
         .then(response => {
-          this.setState({ rates: response });
           for (const key in response.rates) {
             currencyList.push(key);
           }
@@ -60,9 +58,9 @@ class ExchangeManager extends Component {
     localStorage.set("amount", amount);
     if (!amount) return;
     if (fromCurrency === toCurrency)
-      this.setState({ result: this.state.amount });
+      this.setState({ result: amount });
     else if (fromCurrency === from && toCurrency === to && rate >= 0) {
-      const result = this.state.amount * rate;
+      const result = amount * rate;
       this.setState({ result: result.toFixed(2) }, () => {
         localStorage.set("result", result.toFixed(2));
       });
@@ -75,17 +73,21 @@ class ExchangeManager extends Component {
       )
         .then(res => res.json())
         .then(response => {
-          this.setState({
-            currentExchangeRate: {
-              to: toCurrency,
-              from: fromCurrency,
-              rate: response.rates[toCurrency]
+          this.setState(
+            state => {
+              return {
+                result: state.amount * response.rates[state.toCurrency],
+                currentExchangeRate: {
+                  to: toCurrency,
+                  from: fromCurrency,
+                  rate: response.rates[state.toCurrency]
+                }
+              };
+            },
+            () => {
+              localStorage.set("result", this.state.result);
             }
-          });
-          const result = this.state.amount * response.rates[toCurrency];
-          this.setState({ result: result.toFixed(2) }, () => {
-            localStorage.set("result", result.toFixed(2));
-          });
+          );
         })
         .catch(err => {
           alert(err.message);
@@ -93,14 +95,13 @@ class ExchangeManager extends Component {
     }
   };
   handleSwitch = () => {
-    const newToCurrency = this.state.fromCurrency;
-    this.setState(
-      {
-        fromCurrency: this.state.toCurrency,
+    this.setState(state => {
+      const newToCurrency = state.fromCurrency;
+      return {
+        fromCurrency: state.toCurrency,
         toCurrency: newToCurrency
-      },
-      this.convertCurrency
-    );
+      };
+    }, this.convertCurrency);
   };
   render() {
     return (
