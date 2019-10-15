@@ -8,7 +8,7 @@ import Table from "react-bootstrap/Table";
 class ExchangeRates extends Component {
   state = {
     rates: localStorage.get("rates") || {},
-    favoriate: "", 
+    favoriate: ""
   };
   componentDidMount() {
     const lastUpdate = localStorage.get("ratesDate");
@@ -18,18 +18,18 @@ class ExchangeRates extends Component {
         .then(response => {
           console.log(response);
           this.setState({ rates: response.rates }, () => {
-            localStorage.set('ratesDate', response.date);
-            localStorage.set('rates', response.rates)
+            localStorage.set("ratesDate", response.date);
+            localStorage.set("rates", response.rates);
           });
         });
     }
   }
 
   render() {
-    const {rates} = this.state;
+    const { rates } = this.state;
     return (
       <Container>
-        <h3>Rates are based on USD from {localStorage.get('ratesDate')}</h3>
+        <h3>Rates are based on USD from {localStorage.get("ratesDate")}</h3>
         <Link to="/">go to exchange</Link>
         <Table striped bordered hover>
           <thead>

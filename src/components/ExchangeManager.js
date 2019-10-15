@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import localStorage from "local-storage";
-import {isToday} from "../tools/utils.js";
+import { isToday } from "../tools/utils.js";
 import Currency from "./CurrencySelector.js";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
@@ -12,10 +12,10 @@ class ExchangeManager extends Component {
   state = {
     currencies: [],
     rates: [],
-    fromCurrency: localStorage.get('fromCurrency') || "EUR",
-    toCurrency: "USD",
-    amount: "",
-    result: "",
+    fromCurrency: localStorage.get("fromCurrency") || "EUR",
+    toCurrency: localStorage.get("toCurrency") || "USD",
+    amount: localStorage.get("amount") || "",
+    result: localStorage.get("result") || "",
     currentExchangeRate: {
       from: "",
       to: "",
@@ -35,11 +35,10 @@ class ExchangeManager extends Component {
             currencyList.push(key);
           }
           this.setState({ currencies: currencyList }, () => {
-            localStorage.set('currencies', currencyList);
-            localStorage.set('ratesDate', response.date);
-            localStorage.set('rates', response.rates)
+            localStorage.set("currencies", currencyList);
+            localStorage.set("ratesDate", response.date);
+            localStorage.set("rates", response.rates);
           });
-
         });
     }
   }
@@ -56,13 +55,19 @@ class ExchangeManager extends Component {
   convertCurrency = () => {
     const { toCurrency, fromCurrency, amount } = this.state;
     const { to, from, rate } = this.state.currentExchangeRate;
-    localStorage.set('fromCurrency', fromCurrency);
+    localStorage.set({
+      fromCurrency: fromCurrency,
+      toCurrency: toCurrency,
+      amount: amount
+    });
     if (!amount) return;
     if (fromCurrency === toCurrency)
       this.setState({ result: this.state.amount });
     else if (fromCurrency === from && toCurrency === to && rate >= 0) {
       const result = this.state.amount * rate;
-      this.setState({ result: result.toFixed(2) });
+      this.setState({ result: result.toFixed(2) }, () => {
+        localStorage.set("result", result.toFixed(2));
+      });
     } else if (fromCurrency !== toCurrency) {
       fetch(
         "https://api.exchangeratesapi.io/latest?base=" +
@@ -80,7 +85,9 @@ class ExchangeManager extends Component {
             }
           });
           const result = this.state.amount * response.rates[toCurrency];
-          this.setState({ result: result.toFixed(2) });
+          this.setState({ result: result.toFixed(2) }, () => {
+            localStorage.set("result", result.toFixed(2));
+          });
         })
         .catch(err => {
           alert(err.message);
@@ -111,10 +118,8 @@ class ExchangeManager extends Component {
               currency={this.state.fromCurrency}
             />
           </Col>
-          <Col sm  className={"marginAuto"}>
-            <Button onClick={this.handleSwitch}>
-              Switch
-            </Button>
+          <Col sm className={"marginAuto"}>
+            <Button onClick={this.handleSwitch}>Switch</Button>
           </Col>
           <Col sm>
             <Currency
