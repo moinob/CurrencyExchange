@@ -75,11 +75,12 @@ class ExchangeManager extends Component {
         .then(response => {
           this.setState(
             state => {
+              const result = state.amount * response.rates[state.toCurrency];
               return {
-                result: state.amount * response.rates[state.toCurrency],
+                result: result.toFixed(2),
                 currentExchangeRate: {
-                  to: toCurrency,
-                  from: fromCurrency,
+                  to: state.toCurrency,
+                  from: state.fromCurrency,
                   rate: response.rates[state.toCurrency]
                 }
               };
