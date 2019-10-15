@@ -55,11 +55,9 @@ class ExchangeManager extends Component {
   convertCurrency = () => {
     const { toCurrency, fromCurrency, amount } = this.state;
     const { to, from, rate } = this.state.currentExchangeRate;
-    localStorage.set({
-      fromCurrency: fromCurrency,
-      toCurrency: toCurrency,
-      amount: amount
-    });
+    localStorage.set("fromCurrency", fromCurrency);
+    localStorage.set("toCurrency", toCurrency);
+    localStorage.set("amount", amount);
     if (!amount) return;
     if (fromCurrency === toCurrency)
       this.setState({ result: this.state.amount });
